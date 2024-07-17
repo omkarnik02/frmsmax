@@ -1,0 +1,65 @@
+from flask import Blueprint, render_template, request, redirect, url_for, session
+from app.RuleManagement import RuleManager
+import pandas as pd
+
+global role_manager
+rule_manager = RuleManager(None, pd.read_csv('app/rules.csv'), pd.read_csv('app/delRules.csv'))
+
+rules_watchlist_routes = Blueprint('rules_watchlist_routes', __name__)
+
+
+@rules_watchlist_routes.route('/rules_watchlist/rules', methods=['GET', 'POST'])
+def rules():
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('LoginPage'))  # Redirect to login if session is not set
+
+    if request.method == 'POST':
+        # Handle form submission to create rule
+        column = request.form['column']
+        operator = request.form['operator']
+        value = request.form['value']
+        allpre = request.form['allpre']
+        channel = request.form['channel']
+
+        # Handle rule creation and validation
+        message = rule_manager.create_rule(channel, column, operator, value, allpre, username)
+        if message:
+            return render_template('rules.html', rules=rule_manager.df.to_dict('records'), user=username,
+                                   message=message)
+    rules_data = rule_manager.df.to_dict('records')
+    return render_template('rules.html', rules=rules_data, user=username)
+
+
+@rules_watchlist_routes.route('/rules_watchlist/update/<int:rule_id>', methods=['POST'])
+def update_rule(rule_id):
+    # Handle updating rule
+    channel = request.form['channel']
+    column = request.form['column']
+    operator = request.form['operator']
+    value = request.form['value']
+
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('LoginPage'))
+    rule_manager.update_rule(rule_id, channel, column, operator, value, username)
+    return redirect(url_for('rules_watchlist_routes.rules', user=username))
+
+
+@rules_watchlist_routes.route('/rules_watchlist/delete/<int:rule_id>', methods=['POST'])
+def delete_rule(rule_id):
+    # Handle deleting rule
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('LoginPage'))  # Redirect to login if session is not set
+    rule_manager.delete_rule(rule_id, username)
+    return redirect(url_for('rules_watchlist_routes.rules', user=username))
+
+
+@rules_watchlist_routes.route('/rules_watchlist/toggle/<int:rule_id>', methods=['POST'])
+def toggle_rule(rule_id):
+    # Handle toggling rule status
+    rule_manager.toggle_rule_status(rule_id)
+    return redirect(url_for('rules_watchlist_routes.rules'))
+
+# You can define other routes related to rules and watchlist similarly

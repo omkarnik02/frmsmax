@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Alerts{% endblock %}
+{% block content %}
+
+<div id="Pagebox" class="content box">
+    <h1 style="margin-top:0px">Alerts</h1>
+    <div class="container">
+        <div class="alertTable">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ObjectID</th>
+                        <th>CreatedOn</th>
+                        <th>Alert Category</th>
+                        <th>Description</th>
+                        <th>Visited</th>
+                        <th>Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alert in alertsk %}
+                    <tr>
+                        <td>{{ alert.id }}</td>
+                        <td>{{ alert.ObjId }}</td>
+                        <td>{{ alert.CreatedOn }}</td>
+                        <td>{{ alert.AlertCategory }}</td>
+                        <td>{{ alert.Description }}</td>
+                        <td class="{{ 'text-success' if alert.is_seen=='1' else 'text-danger' }}">
+                            <i class="{{ 'fas fa-check-circle' if alert.is_seen=='1' else 'fas fa-hourglass-start' }}"></i>
+                            {{  " Yes" if alert.is_seen=="1"  else "No" }}
+                        </td>
+                        <td>
+                            <form action="{{alert.NavLink}}" method="post">
+                                <input type="hidden" name="action" value="alertredirect">
+                                <input type="hidden" name="objid" value="{{ alert.ObjId }}">
+                                <input type="hidden" name="altid" value="{{ alert.id }}">
+                                <button type="submit" class="btn btn-primary" style="font-size: 0.9em; {{ 'visibility:hidden;' if alert.rank > 1 else '' }}"">
+                                    <i class="fa fa-external-link "></i> Go To Page
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

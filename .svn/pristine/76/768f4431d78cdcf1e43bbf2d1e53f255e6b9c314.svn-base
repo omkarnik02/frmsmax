@@ -1,0 +1,5 @@
+id,column,operator,value,allowprevent,created_on,created_by,modified_on,modified_by,status,channel,appAction,appAprrovedby
+1718088032,sdd,==,545,allow,2024-06-11 12:10:32.388975,on,2024-06-11 14:45:20.929517,,Enabled,ATM,Approved,
+1718088041,545,==,4484,allow,2024-06-11 12:10:41.045383,on,2024-06-11 14:46:12.943357,,Enabled,ATM,Approved,
+1718097357,sddsd,==,sdsd,allow,2024-06-11 14:45:57.238074,on,2024-06-11 14:47:15.655323,,Enabled,ATM,Approved,
+1718097420,amount,!=,5320,allow,2024-06-11 14:47:00.205902,on,2024-06-11 14:48:01.529634,,Enabled,ATM,Approved,

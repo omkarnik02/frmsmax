@@ -1,0 +1,30 @@
+from flask import Blueprint, render_template, redirect, url_for, session
+from sqlalchemy import create_engine
+from app.alertmanagement import AlertManager
+import pandas as pd
+
+alert_routes = Blueprint('alert_routes', __name__)
+
+server = '172.25.57.117'
+database = 'FRMS_AI'
+username = 'sa'
+password = 'P@ss1234'
+Driver = '{SQL Server Native Client 11.0}'
+engine = create_engine(
+    f'mssql+pyodbc:///?odbc_connect=DRIVER={Driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
+)
+
+
+
+@alert_routes.route('/alerts', methods=['GET'])
+def alerts():
+    username = session.get('username')
+
+    if not username:
+        return redirect(url_for('LoginPage'))
+    alert_manager = AlertManager(engine,username)
+    alerts_data = alert_manager.get_alerts_for_user()
+    alerts_list = alerts_data.to_dict('records')
+    print("Alerts Data:", alerts_list)
+
+    return render_template('alerts.html', alertsk=alerts_list, user=username)

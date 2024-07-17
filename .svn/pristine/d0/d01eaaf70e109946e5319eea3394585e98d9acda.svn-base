@@ -1,0 +1,2 @@
+id,column,operator,value,allowprevent,created_on,created_by,modified_on,modified_by,status,channel,appAction,ActionTookby,appAprrovedby
+1718270318,amount,<,"""1000""",prevent,2024-06-13 14:48:38.812847,jk,2024-06-13 14:49:49.240337,vj,Enabled,ATM,Approved,vj,

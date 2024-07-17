@@ -1,0 +1,107 @@
+import pandas as pd
+from flask import Flask
+from datetime import datetime
+import time
+
+app = Flask(__name__)
+
+
+class Rule:
+    def __init__(self, channel, column_name, operator, value, allpre, created_by):
+        self.column_name = column_name
+        self.operator = operator
+        self.channel = channel
+        self.value = value
+        self.allowprevent=allpre
+        self.created_on = datetime.now()
+        self.created_by = created_by
+        self.modified_on = ''
+        self.modified_by = ''
+        self.id = int(time.time())
+        self.status = 'Enabled'
+        self.appAction = 'Pending'
+        self.appAprrovedby = ''
+
+
+class RuleManager:
+    def __init__(self, user, df, del_df, engine):
+        self.user = user
+        self.df = df
+        self.deleted_df = del_df
+        self.engine = engine
+
+    def create_rule(self, channel, column_name, operator, value, allpre, created_by):
+        existing_rule = self.df[
+            (self.df['column_name'] == column_name) & (self.df['operator'] == operator) & (self.df['value'] == value)]
+        if not existing_rule.empty:
+            return "Rule with the same column, operator, and value already exists"
+
+        rule = Rule(channel, column_name, operator, value, allpre, created_by)
+        rule_data = {
+            'id': rule.id,
+            'channel': rule.channel,
+            'column_name': rule.column_name,
+            'operator': rule.operator,
+            'value': rule.value,
+            'allowprevent': rule.allowprevent,
+            'created_on': rule.created_on,
+            'created_by': rule.created_by,
+            'modified_on': '',
+            'modified_by': '',
+            'status': rule.status,
+            'appAction': rule.appAction,
+            'appAprrovedby': rule.appAprrovedby
+        }
+        self.df = pd.concat([self.df, pd.DataFrame([rule_data])], ignore_index=True)
+        self.engine.connect()
+        self.df.to_sql(name='RuleTable', con=self.engine, if_exists='replace', index=False)
+        self.engine.dispose()
+        return rule.id
+
+    def update_rule(self, rule_id, channel=None, column_name=None, operator=None, value=None, modified_by=None,
+                    appstatus=None, ActionTookby=None):
+        if rule_id in self.df['id'].values:
+            if channel:
+                self.df.loc[self.df['id'] == rule_id, 'channel'] = channel
+            if column_name:
+                self.df.loc[self.df['id'] == rule_id, 'column_name'] = column_name
+            if operator:
+                self.df.loc[self.df['id'] == rule_id, 'operator'] = operator
+            if value:
+                self.df.loc[self.df['id'] == rule_id, 'value'] = value
+            if modified_by:
+                self.df.loc[self.df['id'] == rule_id, 'modified_by'] = modified_by
+            if appstatus:
+                self.df.loc[self.df['id'] == rule_id, 'appAction'] = appstatus
+            if ActionTookby:
+                self.df.loc[self.df['id'] == rule_id, 'ActionTookby'] = ActionTookby
+
+            self.df.loc[self.df['id'] == rule_id, 'modified_on'] = datetime.now()
+            self.engine.connect()
+            self.df.to_sql(name='RuleTable', con=self.engine, if_exists='replace', index=False)
+            self.engine.dispose()
+
+    def delete_rule(self, rule_id, deleted_by):
+        if rule_id in self.df['id'].values:
+            deleted_row = self.df[self.df['id'] == rule_id].copy()
+            deleted_row['deleted_on'] = datetime.now()
+            deleted_row['deleted_by'] = deleted_by
+            self.deleted_df = pd.concat([self.deleted_df, deleted_row], ignore_index=True)
+            self.df = self.df[self.df['id'] != rule_id]
+            self.deleted_df.to_sql(name='Deleted_RuleTable', con=self.engine, if_exists='replace', index=False)
+            self.engine.connect()
+            self.df.to_sql(name='RuleTable', con=self.engine, if_exists='replace', index=False)
+            self.engine.dispose()
+
+    def toggle_rule_status(self, rule_id):
+        if rule_id in self.df['id'].values:
+            current_status = self.df.loc[self.df['id'] == rule_id, 'status'].iloc[0]
+            new_status = 'Enabled' if current_status == 'Disabled' else 'Disabled'
+            self.df.loc[self.df['id'] == rule_id, 'status'] = new_status
+            self.engine.connect()
+            self.df.to_sql(name='RuleTable', con=self.engine, if_exists='replace', index=False)
+            self.engine.dispose()
+
+    def get_rules(self):
+        # Return rules as a list of dictionaries
+        return self.df.to_dict('records')

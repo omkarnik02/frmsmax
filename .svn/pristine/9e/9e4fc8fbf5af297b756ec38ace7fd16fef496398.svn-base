@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Alerts{% endblock %}
+{% block content %}
+<div id="Pagebox" class="content box">
+    <h1 style="margin-top:0px">Alerts</h1>
+    <div class="container">
+        <div class="alertTable">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Alert Category</th>
+                        <th>Link</th>
+                        <th>Description</th>
+                        <th>CreatedOn</th>
+                        <th>Visited</th>
+                        <th>ObjectID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alert in alertsk %}
+                    <tr>
+                        <td>{{ alert.id }}</td>
+                        <td>{{ alert.AlertCategory }}</td>
+                        <td>
+                            <form action="{{alert.NavLink}}" method="post">
+                                <input type="hidden" name="action" value="alertredirect">
+                                <input type="hidden" name="objid" value="{{ alert.ObjId }}">
+                                <button type="submit" class="btn btn-success" style="font-size: 0.9em;">
+                                    <i class="fa fa-check"></i> Approve
+                                </button>
+                            </form>
+                        </td>
+                        <td>{{ alert.Description }}</td>
+                        <td>{{ alert.CreatedOn }}</td>
+                        <td>{{  "Yes" if alert.is_seen==0  else "No" }}</td>
+                        <td>{{ alert.ObjId }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

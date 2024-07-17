@@ -1,0 +1,8 @@
+id,column,operator,value,allowprevent,created_on,created_by,modified_on,modified_by,status,channel,appAction,ActionTookby,appAprrovedby
+1718270318,amount,<,"""1000""",prevent,2024-06-13 14:48:38.812847,jk,2024-06-13 14:49:49.240337,vj,Enabled,ATM,Approved,vj,
+1718274977,bbbb,==,25,allow,2024-06-13 16:06:17.611773,jk,2024-06-13 16:07:01.479099,vj,Enabled,ATM,Approved,vj,
+1718275582,fsdf,==,fsdfdsfsd,allow,2024-06-13 16:16:22.307155,jk,2024-06-13 16:52:04.975224,vj,Enabled,ATM,Approved,vj,
+1718277991,dsfdfd,==,dffsfd,allow,2024-06-13 16:56:31.892575,jk,2024-06-13 16:57:17.501937,vj,Enabled,ATM,Approved,vj,
+1718278205,dSDs,==,sadasd,allow,2024-06-13 17:00:05.394195,jk,2024-06-13 17:00:14.717197,vj,Enabled,ATM,Approved,vj,
+1718278277,sai ,==,veda,allow,2024-06-13 17:01:17.914882,jk,2024-06-13 17:01:53.871006,vj,Enabled,ATM,Approved,vj,
+1718282015,affd,==,sdfdsfsd,allow,2024-06-13 18:03:35.069736,jk,,,Enabled,ATM,Pending,,

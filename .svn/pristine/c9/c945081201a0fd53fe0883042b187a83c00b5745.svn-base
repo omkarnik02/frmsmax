@@ -1,0 +1,4 @@
+Id,Channel,AlertType,EmailId,created_on,created_by,modified_on,modified_by,status
+1717653523,ECOM,Suspicious,omkarnik02@gmail.com,2024-06-06 11:28:43.866202,,2024-06-11 11:55:09.030546,on,Disabled
+1717654839,POSA,Suspiciousk,omkarnik02@gmail.com,2024-06-06 11:50:39.662704,,2024-06-06 11:54:14.081491,Star,Disabled
+1718013747,POS,BLOCKED,kkkk@,2024-06-10 15:32:27.108355,,,,Enabled

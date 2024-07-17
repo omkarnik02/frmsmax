@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Rule{% endblock %}
+{% block content %}
+  <h1>Rule and watchlist module</h1>
+  <div id="Pagebox" class="content box" >
+    <!-- Display Dashboard content by default -->
+
+    <div>Filters</div> <!--Filter to be added soon -->
+
+    <h1>Rule Management</h1>
+    <div class="container">
+
+
+
+        <div class="ruleTable">
+            <div class="Tabletop" style="display: flex;justify-content: space-between; align-items: center; ">
+                <button id="add-rule-button" class="btn btn-primary mb-3">+Add Rule</button>
+                 <div id="placeholder" style="display: none; width: 0; height: 0;"></div>
+                <div class="btn-group" style="display: flex; gap: 10px ">
+                     <button id="approve-button" class="btn btn-success mb-3">Approve</button>
+                    <button id="pending-button" class="btn btn-warning mb-3">Pending</button>
+                    <button id="decline-button" class="btn btn-danger mb-3">Decline</button>
+                </div>
+            </div>
+            <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Channel</th>
+                    <th>Column</th>
+                    <th>Operator</th>
+                    <th>Value</th>
+                    <th>Allow/Prevent</th>
+                    <th>Created On</th>
+                    <th>Created By</th>
+                    <th>Status</th>
+                    <th>Modified On</th>
+                    <th>Modified By</th>
+                    <th>Action</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="new-rule-row" style="display: none;">
+                    <td>ID</td>
+                    <td>
+                    <select class="form-control" name="new-channel" required>
+                        <option value="ATM">ATM</option>
+                        <option value="POS">POS</option>
+                        <option value="ECOM">ECOM</option>
+                    </select>
+                </td>
+                    <td><input type="text" class="form-control" name="new-column" placeholder="Column" required></td>
+<!--                    <td><input type="text" class="form-control" name="new-operator" placeholder="Operator" required></td>-->
+
+
+                     <td>
+                    <select class="form-control" name="new-operator" required>
+                        <option value="==">equal to</option>
+                        <option value="!=">not equal to</option>
+                        <option value="<=">less than or equal to</option>
+                        <option value=">=">greater than or equal to</option>
+                        <option value=">">greater than</option>
+                        <option value="<">less than</option>
+                        <option value="in">in</option>
+                        <option value="in range">in range</option>
+                    </select>
+                </td>
+<!--                    <td><input type="text" class="form-control" name="new-value" placeholder="Value" required></td>-->
+                          <td id="valueInputs">
+        <input type="text" class="form-control" name="new-value" placeholder="Value" required>
+        <button type="button" class="btn btn-secondary add-value-btn" style="display: none;">
+            <i class="fas fa-plus"></i>Add Plus
+        </button>
+    </td>
+                    <td class="allpre">
+                          <select id="permissionDropdown">
+                              <option value="allow">Allow</option>
+                              <option value="prevent">Prevent</option>
+                          </select>
+
+                    </td>
+                    <td>Created On</td>
+                    <td>Created By</td>
+                    <td>Status</td>
+                    <td>Modified On</td>
+                    <td>Modified By</td>
+                    <td><button type="button" class="btn btn-primary add-rule-btn" >Add Rule</button></td>
+                </tr>
+
+
+                {% for rule in rules %}
+                    <tr id="rule-{{ rule.id }}">
+                        <td>{{ rule.id }}</td>
+                        <td><span class="channel-value">{{ rule.channel }}</span><input type="text" class="form-control channel-edit" style="display: none;"></td>
+                         <td><span class="column-value">{{ rule.column }}</span><input type="text" class="form-control column-edit" style="display: none;"></td>
+                         <td><span class="operator-value">{{ rule.operator }}</span><input type="text" class="form-control operator-edit" style="display: none;"></td>
+                        <td class="value-inputs1"><span class="value-value">{{ rule.value }}</span><input type="text" class="form-control edit-value" style="display: none;"></td>
+                        <td>{{ rule.allowprevent }}</td>
+                        <td>{{ rule.created_on }}</td>
+                        <td>{{ rule.created_by }}</td>
+                        <td>{{ rule.status }}</td>
+                        <td>{{ rule.modified_on }}</td>
+                        <td>{{ rule.modified_by }}</td>
+
+                        <td class="button-container">
+                            <button type="button" class="btn btn-primary edit-btn fas fa-edit"></button>
+                            <button type="button" class="btn btn-success update-btn fas fa-sync-alt" style="display: none;">Update</button>
+                            <form action="/rules_watchlist/toggle/{{ rule.id }}" method="post">
+                                <input type="hidden" name="username" value="{{ user }}">
+                                <button type="submit" class="btn btn-{{ 'warning fas fa-times' if rule.status == 'Enabled' else 'success fas fa-check' }}">
+                                    {{ '' if rule.status == 'Enabled' else '' }}
+                                </button>
+                            </form>
+
+
+                            <form action="/rules_watchlist/delete/{{ rule.id }}" method="post">
+                                <input type="hidden" name="username" value="{{ user }}">
+                                <button type="submit" class="btn btn-danger fas fa-trash-alt"> </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+<div>Watchlist Management</div>
+
+<script src="{{ url_for('static', filename='/vendor/rules.js') }}"></script>
+{% endblock %}

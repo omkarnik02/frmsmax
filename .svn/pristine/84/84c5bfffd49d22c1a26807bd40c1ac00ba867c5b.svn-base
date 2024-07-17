@@ -1,0 +1,4 @@
+id,column,operator,value,allowprevent,created_on,created_by,modified_on,modified_by,status,channel
+1718014211,dasdsd,==,"""sadfdf""",allow,2024-06-10 15:40:11.893595,on,2024-06-10 19:06:53.954067,on,Enabled,ATM
+1718014292,sfdgsdfg,in range,"(122,156)",allow,2024-06-10 15:41:32.868518,on,2024-06-10 18:44:53.522857,on,Enabled,POS
+1718026257,dfsaf,==,fdsf,allow,2024-06-10 19:00:57.514811,on,,,Enabled,ATM

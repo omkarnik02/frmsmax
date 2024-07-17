@@ -1,0 +1,3 @@
+id,UserName,email,phoneNo,Role,Clearance,groups,Passwords,Status
+1717664537,star,star123@gmail.com,54465435475749,Admin,"[""alerts"",""roles""]","[""Admin"",""Maker""]",Star@123,Active
+1717664777,sai,Sai@gmail.com,9876543210,Admin,"[""alerts"",""roles""]","[""Admin"",""Maker""]	",Sai@1234,Active

@@ -1,0 +1,21 @@
+id,column,operator,value,allowprevent,created_on,created_by,modified_on,modified_by,status,channel,appAction,ActionTookby,appAprrovedby
+1718104560,fedf,==,"""dsfdf""",allow,2024-06-11 16:46:00.956643,on,2024-06-11 18:07:04.595738,on,Enabled,ATM,Approved,on,
+1718104564,sdfdf,==,"""dfsdf""",allow,2024-06-11 16:46:04.676418,on,2024-06-12 14:23:58.611000,vj,Enabled,ATM,Approved,on,
+1718104567,sfdfsdf,==,"""fsdfsdfsd""",allow,2024-06-11 16:46:07.724522,on,2024-06-12 14:23:41.090011,vj,Disabled,ATM,Approved,on,
+1718106191,aa,==,aa,allow,2024-06-11 17:13:11.249851,on,2024-06-11 18:05:26.945961,on,Disabled,ATM,Approved,on,
+1718108912,dsd,==,"""dsd""",allow,2024-06-11 17:58:32.135270,on,2024-06-12 14:23:35.613656,vj,Enabled,ATM,Approved,1718176802,
+1718191395,mcc,<=,100,allow,2024-06-12 16:53:15.149630,John,2024-06-12 19:58:48.394316,vj,Enabled,ATM,Approved,vj,
+1718192644,amount,>,200,prevent,2024-06-12 17:14:04.086358,jk,2024-06-12 17:14:51.039014,on,Enabled,POS,Approved,on,
+1718194833,amount,<,100,prevent,2024-06-12 17:50:33.126767,jk,2024-06-12 19:40:05.555988,on,Enabled,ECOM,Declined,on,
+1718197973,zdf,==,zffffz,allow,2024-06-12 18:42:53.828089,on,2024-06-12 19:20:21.412386,on,Enabled,ATM,Declined,on,
+1718198079,gffdg,==,fdgdfg,allow,2024-06-12 18:44:39.475422,on,2024-06-12 19:20:26.454381,on,Enabled,ATM,Declined,on,
+1718200400,cfh,==,chhgh,allow,2024-06-12 19:23:20.705389,on,2024-06-12 19:33:04.306887,on,Enabled,ATM,Declined,on,
+1718202583,amount,<,5,prevent,2024-06-12 19:59:43.164616,jk,,,Enabled,POS,Pending,,
+<<<<<<< .mine
+1718256160,mcc,==,7011,prevent,2024-06-13 10:52:40.748280,jk,2024-06-13 10:56:24.055034,John,Enabled,POS,Declined,John,
+1718256523,amount,>,5463,prevent,2024-06-13 10:58:43.840544,jk,2024-06-13 11:00:29.084120,John,Enabled,POS,Declined,John,
+||||||| .r181
+=======
+1718257863,amount,<,500,prevent,2024-06-13 11:21:03.466609,jk,,,Enabled,ATM,Pending,,
+1718258039,vcxbvcbvcb,!=,5432451,prevent,2024-06-13 11:23:59.877638,jk,2024-06-13 11:31:01.183317,vj,Enabled,ATM,Declined,vj,
+>>>>>>> .r183

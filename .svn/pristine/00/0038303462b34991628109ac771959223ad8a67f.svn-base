@@ -1,0 +1,318 @@
+import csv
+from flask import render_template, request, redirect, url_for, session
+import pyodbc
+from app import app
+import pandas as pd
+from sqlalchemy import create_engine
+from app.RuleManagement import RuleManager
+from app.RoleManagement import RoleManager
+from app.mailConfiguration import configManager
+
+app.secret_key = b'\x08\xa5\xb7\xb42br\xd0\xa0\xf0\xc7f\xbe\xaew^\xf5\x89\x03\xbb\xfe\xd9\xcd\xc0'
+
+
+server = '172.25.57.117'
+database = 'FRMS_AI'
+username = 'sa'
+password = 'P@ss1234'
+Driver='{SQL Server Native Client 11.0}'
+engine = create_engine(
+    'mssql+pyodbc:///?odbc_connect=DRIVER={SQL Server Native Client 11.0};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+conn = pyodbc.connect(
+            'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+rolesdf=pd.read_sql('''select um.id,um.UserName,um.email,um.phoneNo,rm.[Role],cm.sections as [Clearance],um.groups,um.Passwords,um.[Status] from usermaster um
+left join RoleMaster rm on um.RoleID=rm.RoleID
+left join ClearanceMaster cm on um.ClearanceID=cm.ClearanceID''',conn)
+rolesmaster=pd.read_sql('''select * from RoleMaster''',conn)
+ClearanceMaster=pd.read_sql('''select * from ClearanceMaster''',conn)
+
+global rule_manager
+global role_manager
+rule_manager = RuleManager(None, pd.read_csv('app/rules.csv'), pd.read_csv('app/delRules.csv'))
+role_manager = RoleManager(None,rolesdf, pd.read_csv('app/delroles.csv'),rolesmaster,ClearanceMaster,engine)
+config_manager = configManager(None,pd.read_csv('app/Mailconfig_data.csv'),pd.read_csv('app/delConfig.csv'))
+
+@app.route('/', methods=['GET', 'POST'])
+def LoginPage():
+    if request.method == 'POST':
+        username1 = request.form['username']
+        password2 = request.form['password']
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM UserMaster WHERE UserName = ? AND Passwords = ?', (username1, password2))
+        row = cursor.fetchone()
+
+        if row:
+            status = row[6]  
+            if status == 'Inactive':
+                error = 'User status is inactive. Kindly ask the admin to make it active.'
+                return render_template('LoginPage.html', error=error)
+            elif status == 'Active':
+                session['username'] = username1
+                return redirect(url_for('Home', user=session['username']))
+            else:
+                error = 'Unknown status. Please contact support.'
+                return render_template('LoginPage.html', error=error)
+        else:
+            error = 'Invalid username or password. Please try again.'
+            return render_template('LoginPage.html', error=error)
+
+    return render_template('LoginPage.html')
+
+
+@app.route('/Home')
+def Home():
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('LoginPage'))
+    return render_template('Home.html', user=username)
+    
+@app.route('/signout')
+def sign_out():
+    session.pop('username', None)  
+    return render_template('LoginPage.html')
+
+
+@app.route('/analysis')
+def analysis():
+    username = session.get('username')  # Retrieve username from session
+    if not username:
+        return redirect(url_for('LoginPage'))
+    return render_template('analysis.html', user=username)
+
+@app.route('/cim')
+def cim():
+    username = session.get('username')  # Retrieve username from session
+    if not username:
+        return redirect(url_for('LoginPage'))
+    return render_template('CIM.html', user=username)
+
+@app.route('/alerts')
+def alerts():
+    username = session.get('username')  # Retrieve username from session
+    if not username:
+        return redirect(url_for('LoginPage'))
+    return render_template('alerts.html', user=username)
+  
+
+
+
+@app.route('/testing_form')
+def testing_form():
+    username = session.get('username')  # Retrieve username from session
+    if not username:
+        return redirect(url_for('LoginPage'))
+    return render_template('testing_form.html', user=username)
+                
+    
+@app.route('/analysis/analysedetails', methods=['GET', 'POST'])
+def analysedetails():
+    username = session.get('username')  # Retrieve username from session
+    if not username:
+        return redirect(url_for('LoginPage'))
+    if request.method == 'POST':
+        txnid = request.form['TxnID']
+        CardNumber = request.form['CardNumber']
+        Channel = request.form['channel']
+        fromDate = request.form['fromdate']
+        todate = request.form['todate']
+        mcc = request.form['mcc']
+        print(CardNumber)
+        prevs = pd.read_csv('app/FRMSTxns.csv')
+        if Channel:
+            prevs = prevs[prevs['Channel'] == Channel]
+        if mcc:
+            prevs = prevs[prevs['MCC'] == int(mcc)]
+        if fromDate:
+            prevs['DateTime'] = pd.to_datetime(prevs['DateTime'])
+            prevs = prevs[(prevs['DateTime'] >= fromDate)]
+        if todate:
+            prevs['DateTime'] = pd.to_datetime(prevs['DateTime'])
+            prevs = prevs[prevs['DateTime'] <= todate]
+        if txnid:
+            prevs['txnID'] = prevs['txnID'].astype(int).astype(str)
+            prevs = prevs[prevs['txnID'] == txnid].to_dict('records')
+            return render_template('analysis.html', prevs=prevs, user=username)
+        if CardNumber:
+            prevs['CardNumber'] = prevs['CardNumber'].astype(int).astype(str)
+            print(prevs)
+            prevs=prevs[prevs['CardNumber'] == CardNumber].to_dict('records')
+            return render_template('analysis.html',prevs=prevs,user=username)
+        prevs=prevs.to_dict('records')
+    return render_template('analysis.html',prevs=prevs,user=username)
+
+
+
+
+
+@app.route('/rules_watchlist/rules', methods=['GET', 'POST'])
+def rules():
+    username = session.get('username')
+    print(username)  # Retrieve username from session
+    if not username:
+        return redirect(url_for('LoginPage'))  # Redirect to login if session is not set
+
+    if request.method == 'POST':
+        
+        column = request.form['column']
+        operator = request.form['operator']
+        value = request.form['value']
+        allpre=request.form['allpre']
+        channel=request.form['channel']
+        
+        message = rule_manager.create_rule(channel,column,operator, value, allpre,username)  # Assuming user1 for simplicity
+        if message:
+
+            return render_template('rules.html', rules=rule_manager.df.to_dict('records'), user=username,
+                                   message=message)
+    rules_data = rule_manager.df.to_dict('records')
+    return render_template('rules.html', rules=rules_data, user=username)
+
+
+@app.route('/rules_watchlist/update/<int:rule_id>', methods=['POST'])
+def update_rule(rule_id):
+    channel=request.form['channel']
+    column = request.form['column']
+    operator = request.form['operator']
+    value = request.form['value']
+
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('LoginPage'))
+    rule_manager.update_rule(rule_id,channel, column, operator, value, username)
+    return redirect(url_for('rules', user=username))
+
+
+@app.route('/rules_watchlist/delete/<int:rule_id>', methods=['POST'])
+def delete_rule(rule_id):
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('LoginPage'))  # Redirect to login if session is not set
+    rule_manager.delete_rule(rule_id, username)
+    return redirect(url_for('rules', user=username))
+
+
+@app.route('/rules_watchlist/toggle/<int:rule_id>', methods=['POST'])
+def toggle_rule(rule_id):
+    rule_manager.toggle_rule_status(rule_id)
+    return redirect(url_for('rules'))
+
+
+# -------------------------------System_module html routing (Roles management)--------------------
+
+
+
+
+@app.route('/System_module/roles', methods=['GET', 'POST'])
+def roles():
+    username = session.get('username')  # Retrieve username from session
+    if not username:
+        return redirect(url_for('LoginPage'))  # Redirect to login if session is not set
+
+    if request.method == 'POST':
+
+        UserName = request.form['UserName']
+        email = request.form['email']
+        phoneNo = request.form['phoneNo']
+        Role = request.form['Role']
+        Clearance = request.form['Clearance']
+        groups = request.form['groups']
+        Passwords = request.form['Passwords']
+        Status = request.form['Status']
+
+        message = role_manager.create_role(UserName, email, phoneNo, Role, Clearance,groups,Passwords,Status) 
+        print(message) # Assuming user1 for simplicity
+        if message:
+            return render_template('System_module.html', roles=role_manager.df.to_dict('records'), user=username,
+                                   message=message)
+    
+    roles_data = role_manager.df.to_dict('records')
+    return render_template('System_module.html', roles=roles_data, user=username)
+
+
+@app.route('/System_module/update/<int:role_id>', methods=['POST'])
+def update_role(role_id):
+    print(role_id)
+    UserName = request.form['UserName']
+    email = request.form['email']
+    phoneNo = request.form['phoneNo']
+    Role = request.form['Role']
+    Clearance = request.form['Clearance']
+    groups = request.form['groups']
+    Passwords = request.form['Passwords']
+    Status = request.form['Status']
+    username = session.get('username')
+    print(UserName)
+    if not username:
+        return redirect(url_for('LoginPage'))  # Redirect to login if session is not set
+    role_manager.update_role(role_id, UserName, email, phoneNo, Role, Clearance,groups,Passwords,Status)
+    return redirect(url_for('roles', user=username))
+
+
+
+@app.route('/System_module/delete/<int:role_id>', methods=['POST'])
+def delete_role(role_id):
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('LoginPage'))  
+    role_manager.delete_role(role_id, username)
+    return redirect(url_for('roles', user=username))
+
+
+@app.route('/System_module/toggle/<int:role_id>', methods=['POST'])
+def toggle_role(role_id):
+    print(role_id,'==================================')
+    username = session.get('username')
+    role_manager.toggle_role_status(role_id)
+    return redirect(url_for('roles',user=username))
+
+# -------------------------------End of System_module html routing (Roles management)--------------------
+
+#================================Configure html============================================
+
+@app.route('/configure/configs', methods=['GET', 'POST'])
+def configs():
+    username = session.get('username')  # Retrieve username from session
+    if not username:
+        return redirect(url_for('login'))  # Redirect to login if session is not set
+
+    if request.method == 'POST':
+        Channel = request.form['Channel']
+        AlertType = request.form['AlertType']
+        EmailId = request.form['EmailId']
+
+        print(request.form)
+        message = config_manager.create_config(Channel,AlertType, EmailId)  # Assuming user1 for simplicity
+        if message:
+            return render_template('configure.html', configs=config_manager.df.to_dict('records'), user=username,
+                                   message=message)
+    config_data = config_manager.df.to_dict('records')
+    return render_template('configure.html', configs=config_data, user=username)
+
+
+@app.route('/configure/update/<int:conig_id>', methods=['POST'])
+def update_config(conig_id):
+    AlertType = request.form['AlertType']
+    EmailId = request.form['EmailId']
+    Channel = request.form['Channel']
+
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('login'))  # Redirect to login if session is not set
+    config_manager.update_config(conig_id, AlertType, EmailId, Channel, username)
+    return redirect(url_for('configs', user=username))
+
+
+@app.route('/configure/configs/delete/<int:conig_id>', methods=['POST'])
+def delete_config(conig_id):
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('login'))  # Redirect to login if session is not set
+    config_manager.delete_config(conig_id, username)
+    return redirect(url_for('configs', user=username))
+
+
+@app.route('/configure/configs/toggle/<int:conig_id>', methods=['POST'])
+def toggle_config(conig_id):
+    config_manager.toggle_config_status(conig_id)
+    return redirect(url_for('configs'))
+#=============================End of configure html+++++++++++++++++++++++++++++=+++++++++

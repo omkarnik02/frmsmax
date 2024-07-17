@@ -1,0 +1,13 @@
+from flask import Flask
+import pandas as pd
+from sqlalchemy import create_engine
+
+app = Flask(__name__)
+
+class AlertManager:
+    def __init__(self, engine,username):
+        self.engine = engine
+        self.df=pd.read_sql(f"select   a.id,a.AlertCategory, a.NavLink, a.[Description], a.[Visited],a.ObjId from AlertConfig a join UserMaster u on a.userid=u.id where u.username='{username}'", self.engine.connect())
+    def get_alerts_for_user(self):
+        return self.df
+
